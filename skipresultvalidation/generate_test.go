@@ -79,9 +79,15 @@ func generate(t *testing.T, name, source string) (string, error) {
 }
 
 func TestGenerate(t *testing.T) {
-	for name, source := range map[string]string{"v3.31": endpointMethodV331, "v3.34": endpointMethodV334} {
-		t.Run("removes the result validations of "+name, func(t *testing.T) {
-			got, err := generate(t, "endpoint-method", source)
+	for _, tc := range []struct {
+		name   string
+		source string
+	}{
+		{name: "v3.31", source: endpointMethodV331},
+		{name: "v3.34", source: endpointMethodV334},
+	} {
+		t.Run("removes the result validations of "+tc.name, func(t *testing.T) {
+			got, err := generate(t, "endpoint-method", tc.source)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -111,14 +117,17 @@ func TestGenerate(t *testing.T) {
 			t.Errorf("source changed:\n%s", got)
 		}
 	})
-	t.Run("fails on an unknown form of the result validation", func(t *testing.T) {
-		changed := strings.Replace(endpointMethodV331, "return nil, err", "return nil, fmt.Errorf(\"invalid result: %w\", err)", 1)
-		if _, err := generate(t, "endpoint-method", changed); err == nil {
-			t.Error("want an error")
-		}
-		changed = strings.Replace(endpointMethodV334, `"fault"`, `"invalid_result"`, 1)
-		if _, err := generate(t, "endpoint-method", changed); err == nil {
-			t.Error("want an error")
-		}
-	})
+	for _, tc := range []struct {
+		name   string
+		source string
+	}{
+		{name: "v3.31", source: strings.Replace(endpointMethodV331, "return nil, err", "return nil, fmt.Errorf(\"invalid result: %w\", err)", 1)},
+		{name: "v3.34", source: strings.Replace(endpointMethodV334, `"fault"`, `"invalid_result"`, 1)},
+	} {
+		t.Run("fails on an unknown form of the result validation of "+tc.name, func(t *testing.T) {
+			if _, err := generate(t, "endpoint-method", tc.source); err == nil {
+				t.Error("want an error")
+			}
+		})
+	}
 }

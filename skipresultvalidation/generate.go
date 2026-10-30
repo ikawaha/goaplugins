@@ -4,9 +4,11 @@
 // Since goa v3.31, the endpoints of methods that return a ResultType validate
 // the projected result (views.ValidateXxx) before returning it. Results that
 // do not satisfy the design validations (e.g. Format, Pattern or Enum) then
-// fail at run time, while goa v3.30 and earlier returned them as is. This
-// plugin removes the call from the generated endpoints and leaves the OpenAPI
-// specification and the views package unchanged.
+// fail at run time, while goa v3.30 and earlier returned them as is. goa v3.31
+// to v3.33 return the validation error as is, and goa v3.34 and later report
+// it as a server fault. This plugin removes the call from the generated
+// endpoints and leaves the OpenAPI specification and the views package
+// unchanged.
 //
 // Import the package for its side effect in the design package:
 //
