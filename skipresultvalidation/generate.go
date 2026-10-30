@@ -27,8 +27,10 @@ const sectionName = "endpoint-method"
 
 var (
 	// validationCall matches the result validation in the endpoint method
-	// template of goa v3.31 and later.
-	validationCall = regexp.MustCompile(`(?m)^\t*if err := \{\{ \.ViewedResult\.ViewsPkg \}\}\.\{\{ \.ViewedResult\.Validate\.Declaration\.Name \}\}\(vres\); err != nil \{\n\t*return nil, err\n\t*\}\n`)
+	// template of goa v3.31 and later. goa v3.31 to v3.33 return the
+	// validation error as is, while goa v3.34 and later wrap it in a server
+	// fault preceded by a comment.
+	validationCall = regexp.MustCompile(`(?m)^\t*if err := \{\{ \.ViewedResult\.ViewsPkg \}\}\.\{\{ \.ViewedResult\.Validate\.Declaration\.Name \}\}\(vres\); err != nil \{\n(?:\t*//.*\n)*\t*return nil, (?:err|goa\.NewServiceError\(err, "fault", false, false, true\))\n\t*\}\n`)
 	// validationRef matches any reference to the result validation in the
 	// template. It detects template changes that validationCall no longer
 	// matches.
